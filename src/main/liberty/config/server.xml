@@ -2,26 +2,35 @@
 <server description="new server">
   <!-- Enable features -->
   <featureManager>
-   <feature>usr:opentracingZipkin-0.31</feature>
-    <feature>microProfile-3.0</feature>
-    <feature>jndi-1.0</feature>
-    <feature>jsp-2.3</feature>
-    <feature>servlet-4.0</feature>
-    <feature>managedBeans-1.0</feature>
-    <feature>websocket-1.1</feature>
+    <feature>microProfile-4.0</feature>
   </featureManager>
 
   <!-- To access this server from a remote client add a host attribute to the following element, e.g. host="*" -->
   <httpEndpoint id="defaultHttpEndpoint" host="*"
 		httpPort="9080" httpsPort="9443">
+    <accessLogging
+      enabled="${env.ACCESS_LOGGING_ENABLED}"
+      filepath="${server.output.dir}/logs/http_defaultEndpoint_access.log"
+      logFormat='%h %u %t "%r" %s %b %D %{User-agent}i'>
+    </accessLogging>
   </httpEndpoint>
 
-  <opentracingZipkin />
+  <quickStartSecurity userName="${env.USERNAME}" userPassword="${env.PASSWORD}" />
 
-  <webApplication name="acmeair-authservice" location="acmeair-authservice-java-3.0.0-SNAPSHOT.war" contextRoot="/">
+  <logging consoleFormat="json" consoleSource="message,trace,accessLog,ffdc,audit" messageFormat="json" messageSource="message,trace,accessLog,ffdc,audit" traceSpecification="${env.TRACE_SPEC}" />
+ 
+  <webApplication name="acmeair-authservice" location="acmeair-authservice-java-4.0.war" contextRoot="/auth">
     <!-- enable visibility to third party apis -->
     <classloader apiTypeVisibility="api,ibm-api,spec,stable,third-party"/>
   </webApplication>
 
   <keyStore id="defaultKeyStore" password="secret" /> 
+	
+  <cors domain="/auth"
+      allowedOrigins="*"
+      allowedMethods="GET, DELETE, POST, OPTIONS"
+      allowedHeaders="*"
+      allowCredentials="true"
+      maxAge="3600" />
+	
 </server>
